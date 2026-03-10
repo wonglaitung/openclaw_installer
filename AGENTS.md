@@ -7,13 +7,14 @@ OpenClaw 是一个基于 AI 的智能助手框架，提供命令行界面、Web 
 ### 核心特性
 
 - **多模态交互**：支持命令行、Web 界面和系统托盘应用
-- **系统托盘集成**：Windows 原生托盘应用，支持开机自启动和图形化管理
+- **系统托盘集成**：Windows 原生托盘应用，支持开机自启动和图形化管理，后台运行无干扰
 - **自定义 AI 模型**：集成阿里云 GLM-5 模型（通过自定义提供商）
 - **技能系统**：支持扩展技能（如港股查询）
 - **会话管理**：持久化会话历史和配置
 - **设备管理**：支持设备配对和多设备访问
 - **Shell 集成**：提供多种 Shell 的自动补全支持
 - **便捷管理**：一键启动/停止/重启服务，快速访问日志和配置
+- **代码管理**：支持 Git 版本控制，代码托管在 GitHub
 
 ### 技术栈
 
@@ -29,6 +30,7 @@ OpenClaw 是一个基于 AI 的智能助手框架，提供命令行界面、Web 
   - Pillow (图像处理)
 - **开发工具**：
   - Git (版本控制)
+  - GitHub (代码托管)
   - Bash, Fish, PowerShell, Zsh (Shell 支持)
 
 ## 项目结构
@@ -209,23 +211,31 @@ openclaw onboard
 start_tray.bat
 ```
 
-启动后，Windows 系统托盘区会显示蓝色图标（显示 "iF"）。右键点击图标可访问以下功能：
+**启动特性**：
+- 双击 `start_tray.bat` 后，命令行窗口会快速关闭
+- 托盘应用在后台运行，不会显示命令行窗口
+- OpenClaw 图标会自动出现在 Windows 系统托盘区（蓝色圆形图标，显示 "iF"）
+- Gateway 服务会自动启动
+
+启动后，右键点击系统托盘图标可访问以下功能：
 
 - **打开 Web 界面** - 直接在浏览器中打开 OpenClaw 界面
 - **启动服务** - 手动启动 OpenClaw Gateway
 - **停止服务** - 停止 OpenClaw Gateway
 - **重启服务** - 重启 OpenClaw Gateway
-- **查看状态** - 显示当前运行状态（运行中/已停止）
+- **查看状态** - 显示当前运行状态（运行中/已停止），并弹出通知
 - **打开日志目录** - 打开日志文件夹
 - **打开配置文件** - 打开配置文件
 - **退出** - 关闭托盘应用和 Gateway
 
 **托盘应用特性**：
+- 后台运行，不占用桌面空间
 - 自动启动 Gateway 服务
-- 实时状态监控
+- 实时状态监控（每 5 秒检查一次）
 - 一键访问日志和配置
 - 支持开机自启动
 - 友好的图形界面
+- 启动时显示通知
 
 ### Web 界面使用
 
@@ -269,6 +279,35 @@ source .openclaw/completions/openclaw.zsh
 ```
 
 ## 开发指南
+
+### Git 工作流
+
+项目使用 Git 进行版本控制，代码托管在 GitHub：
+
+**仓库地址**：https://github.com/wonglaitung/openclaw_installer
+
+**基本工作流**：
+```bash
+# 克隆仓库（如果还没有）
+git clone https://github.com/wonglaitung/openclaw_installer.git
+cd openclaw_installer
+
+# 查看当前状态
+git status
+
+# 添加修改的文件
+git add .
+
+# 提交更改
+git commit -m "描述你的更改"
+
+# 推送到远程仓库
+git push
+```
+
+**分支管理**：
+- `master` - 主分支，稳定版本
+- 建议在开发新功能时创建新分支
 
 ### 工作空间配置
 
@@ -407,6 +446,8 @@ pip install pystray Pillow
 1. 检查 Pillow 是否正确安装
 2. 尝试重新启动托盘应用
 3. 检查 Windows 系统托盘设置（可能被隐藏）
+4. 在任务管理器中查看是否有 `pythonw.exe` 进程正在运行
+5. 检查 Windows 通知区域设置，确保托盘图标未设置为隐藏
 
 ### AI 模型无法响应
 
@@ -469,12 +510,16 @@ pip install pystray Pillow
 
 ### 5. 托盘应用使用建议
 
-- 推荐使用托盘应用作为主要启动方式
+- 推荐使用托盘应用作为主要启动方式（后台运行，不占用桌面空间）
 - 设置开机自启动以保持服务可用
 - 定期查看日志以监控服务状态
 - 使用"查看状态"功能确认服务运行状态
+- 托盘应用启动后，命令行窗口会自动关闭，这是正常行为
 
 ## 资源链接
+
+### 代码仓库
+- **GitHub 仓库**：https://github.com/wonglaitung/openclaw_installer
 
 ### 官方文档
 - **OpenClaw 官方文档**：（待补充）
@@ -495,7 +540,8 @@ pip install pystray Pillow
 
 - **OpenClaw 版本**：2026.3.2
 - **最后更新**：2026-03-10
-- **最后配置**：2026-03-08
+- **最后配置**：2026-03-10
+- **Git 仓库**：https://github.com/wonglaitung/openclaw_installer
 
 ## 许可证
 
@@ -505,3 +551,4 @@ pip install pystray Pillow
 
 **维护者**：OpenClaw Team
 **最后更新**：2026-03-10
+**代码仓库**：https://github.com/wonglaitung/openclaw_installer
