@@ -34,11 +34,46 @@ class OpenClawTrayApp:
         self.base_path = Path(__file__).parent.resolve()
         self.node_path = self.base_path / "node-v22.21.1-win-x64"
         self.python_path = self.base_path / "Python312"
-        
-        # 配置
-        self.web_url = "http://localhost:18789/#token=c1956e2f9bd62dfac41f31b0ebf22586f720913d495d3c6e"
+
+        # 读取配置文件
+        self._load_config()
+
+    def _load_config(self):
+        """从配置文件加载配置"""
+        # 配置文件位于用户主目录下的 .openclaw 文件夹
+        config_path = Path.home() / ".openclaw" / "openclaw.json"
+
+        # 默认值
         self.port = 18789
-        self.token = "c1956e2f9bd62dfac41f31b0ebf22586f720913d495d3c6e"
+        self.token = ""
+        self.web_url = f"http://localhost:{self.port}/"
+
+        # 尝试读取配置文件
+        if config_path.exists():
+            try:
+                import json
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+
+                # 读取端口
+                if 'gateway' in config and 'port' in config['gateway']:
+                    self.port = config['gateway']['port']
+
+                # 读取 token
+                if 'gateway' in config and 'auth' in config['gateway'] and 'token' in config['gateway']['auth']:
+                    self.token = config['gateway']['auth']['token']
+
+                # 构建 Web URL
+                if self.token:
+                    self.web_url = f"http://localhost:{self.port}/#token={self.token}"
+                else:
+                    self.web_url = f"http://localhost:{self.port}/"
+
+                print(f"配置加载成功: 端口={self.port}, token={'已设置' if self.token else '未设置'}")
+            except Exception as e:
+                print(f"读取配置文件失败：{e}，使用默认配置")
+        else:
+            print(f"配置文件不存在：{config_path}，使用默认配置")
         
         # 进程管理
         self.gateway_process = None
@@ -51,25 +86,25 @@ class OpenClawTrayApp:
         
     def _create_icon(self):
         """创建托盘图标"""
-        # 创建一个简单的图标（蓝色圆形背景，白色 "iF" 文字）
+        # 创建一个简单的图标（红色圆形背景，白色 "OC" 文字）
         try:
             # 创建 RGBA 图像
             image = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
             draw = ImageDraw.Draw(image)
-            
-            # 绘制圆形背景（蓝色）
-            draw.ellipse([4, 4, 60, 60], fill=(0, 120, 215, 255))
-            
-            # 绘制文字 "iF"
+
+            # 绘制圆形背景（红色）
+            draw.ellipse([4, 4, 60, 60], fill=(220, 53, 69, 255))
+
+            # 绘制文字 "OC"
             try:
                 # 尝试使用 Arial 字体
                 font = ImageFont.truetype("arial.ttf", 36)
             except:
                 # 如果找不到 Arial，使用默认字体
                 font = ImageFont.load_default()
-            
+
             # 绘制文字
-            draw.text((16, 12), "iF", fill=(255, 255, 255, 255), font=font)
+            draw.text((14, 12), "OC", fill=(255, 255, 255, 255), font=font)
             
             self.icon_image = image
             print("图标创建成功")
@@ -77,7 +112,7 @@ class OpenClawTrayApp:
             print(f"创建图标失败：{e}")
             # 创建一个简单的备用图标（纯色方块）
             try:
-                image = Image.new('RGB', (64, 64), (0, 120, 215))
+                image = Image.new('RGB', (64, 64), (220, 53, 69))
                 self.icon_image = image
                 print("使用备用图标")
             except Exception as e2:
@@ -177,6 +212,29 @@ class OpenClawTrayApp:
         """打开 Web 界面"""
         print("打开 Web 界面...")
         webbrowser.open(self.web_url)
+
+    def on_onboard(self, icon, item):
+        """执行 OpenClaw 初始化设定"""
+        print("执行 OpenClaw 初始化设定...")
+        try:
+            env = self._setup_environment()
+
+            # 构建命令
+            openclaw_cmd = str(self.node_path / "node.exe")
+            openclaw_script = str(self.node_path / "node_modules" / "openclaw" / "dist" / "index.js")
+
+            print(f"运行: {openclaw_cmd} {openclaw_script} onboard")
+
+            # 使用 subprocess 启动命令，在新窗口中显示
+            subprocess.Popen(
+                [openclaw_cmd, openclaw_script, "onboard"],
+                env=env,
+                creationflags=subprocess.CREATE_NEW_CONSOLE
+            )
+            print("onboard 命令已启动")
+        except Exception as e:
+            print(f"执行 onboard 命令时出错：{e}")
+            self.icon.notify(f"执行失败：{e}", "OpenClaw Onboard")
     
     def on_start(self, icon, item):
         """启动服务"""
@@ -231,6 +289,7 @@ class OpenClawTrayApp:
         """创建右键菜单"""
         menu_items = [
             pystray.MenuItem('打开 Web 界面', self.on_open_web),
+            pystray.MenuItem('初始化设定', self.on_onboard),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem('启动服务', self.on_start),
             pystray.MenuItem('停止服务', self.on_stop),
