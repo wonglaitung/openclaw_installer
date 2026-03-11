@@ -6,18 +6,19 @@ OpenClaw 是一个基于 AI 的智能助手框架，提供命令行界面、Web 
 
 - **GitHub 仓库**：https://github.com/wonglaitung/openclaw_installer
 - **版本**：2026.3.2
-- **最后更新**：2026-03-10
+- **最后更新**：2026-03-11
 
 ## 功能特性
 
 - **多模态交互**：支持命令行、Web 界面和系统托盘应用
 - **系统托盘集成**：Windows 原生托盘应用，支持开机自启动和图形化管理，后台运行无干扰
+- **动态配置读取**：从用户主目录的配置文件自动读取端口和 token 设置
 - **自定义 AI 模型**：集成阿里云 GLM-5 模型（通过自定义提供商）
-- **技能系统**：支持扩展技能（如港股查询）
+- **技能系统**：支持扩展技能（港股查询、股票新闻查询）
 - **会话管理**：持久化会话历史和配置
 - **设备管理**：支持设备配对和多设备访问
 - **Shell 集成**：提供多种 Shell 的自动补全支持
-- **便捷管理**：一键启动/停止/重启服务，快速访问日志和配置
+- **便捷管理**：一键启动/停止/重启服务，快速访问日志和配置，支持初始化设定
 - **代码管理**：支持 Git 版本控制，代码托管在 GitHub
 
 ## 快速开始
@@ -54,8 +55,9 @@ OpenClaw 是一个基于 AI 的智能助手框架，提供命令行界面、Web 
    **启动特性**：
    - 双击 `start_tray.bat` 后，命令行窗口会快速关闭
    - 托盘应用在后台运行，不会显示命令行窗口
-   - OpenClaw 图标会自动出现在 Windows 系统托盘区（蓝色圆形图标，显示 "iF"）
+   - OpenClaw 图标会自动出现在 Windows 系统托盘区（红色圆形图标，显示 "OC"）
    - Gateway 服务会自动启动
+   - 自动从 `~/.openclaw/openclaw.json` 读取配置
 
 2. **设置开机自启动**：
    ```bash
@@ -84,9 +86,10 @@ start_openclaw.bat gateway
 
 ### 系统托盘应用
 
-启动后，在 Windows 系统托盘区会显示蓝色图标（显示 "iF"）。右键点击图标可访问以下功能：
+启动后，在 Windows 系统托盘区会显示红色图标（显示 "OC"）。右键点击图标可访问以下功能：
 
 - **打开 Web 界面** - 直接在浏览器中打开 OpenClaw 界面
+- **初始化设定** - 执行 OpenClaw 初始化配置（onboard 命令）
 - **启动服务** - 手动启动 OpenClaw Gateway
 - **停止服务** - 停止 OpenClaw Gateway
 - **重启服务** - 重启 OpenClaw Gateway
@@ -107,11 +110,26 @@ start_openclaw.bat gateway
 ### 港股查询技能
 
 ```bash
-cd .openclaw/workspace/skills/aastocks/scripts
+cd ~/.openclaw/workspace/skills/aastocks/scripts
 python3 fetch_stock.py 01398  # 工商银行
 python3 fetch_stock.py 0700   # 腾讯控股
 python3 fetch_stock.py 0001   # 长和
 ```
+
+### 股票新闻查询技能
+
+```bash
+cd ~/.openclaw/workspace/skills/yfinancenews/scripts
+python3 fetch_news.py AAPL        # 苹果公司
+python3 fetch_news.py 0700.HK     # 腾讯控股
+python3 fetch_news.py MSFT --limit 10  # 微软，返回10条新闻
+```
+
+支持的股票代码格式：
+- 美股：AAPL, MSFT, TSLA 等
+- 港股：1398.HK, 0700.HK 等
+- A股（上海）：600519.SS 等
+- A股（深圳）：000001.SZ 等
 
 ### Shell 自动补全
 
@@ -134,7 +152,7 @@ source .openclaw/completions/openclaw.zsh
 
 ### 主配置文件
 
-配置文件位于 `.openclaw/openclaw.json`：
+配置文件位于 `~/.openclaw/openclaw.json`（用户主目录）：
 
 ```json
 {
@@ -169,7 +187,7 @@ source .openclaw/completions/openclaw.zsh
 
 ### 工作空间配置
 
-工作空间位于 `.openclaw/workspace/`：
+工作空间位于 `~/.openclaw/workspace/`：
 
 - **IDENTITY.md** - AI 助手的身份配置
 - **USER.md** - 用户信息
@@ -181,55 +199,24 @@ source .openclaw/completions/openclaw.zsh
 
 ```
 openclaw/
-├── .openclaw/                    # 主配置目录
-│   ├── agents/                   # 代理配置
-│   │   └── main/                 # 主代理
-│   │       ├── agent/            # 代理配置文件
-│   │       └── sessions/         # 会话历史
-│   ├── browser/                  # 浏览器相关配置
-│   ├── canvas/                   # 画布功能
-│   ├── completions/              # Shell 自动补全脚本
-│   │   ├── openclaw.bash
-│   │   ├── openclaw.fish
-│   │   ├── openclaw.ps1
-│   │   └── openclaw.zsh
-│   ├── cron/                     # 定时任务配置
-│   │   └── jobs.json
-│   ├── devices/                  # 设备配对信息
-│   │   ├── paired.json
-│   │   └── pending.json
-│   ├── identity/                 # 设备身份标识
-│   │   └── device.json
-│   ├── logs/                     # 日志文件
-│   ├── workspace/                # 工作空间
-│   │   ├── AGENTS.md             # 项目文档
-│   │   ├── BOOTSTRAP.md          # 初始化引导
-│   │   ├── HEARTBEAT.md          # 心跳检查配置
-│   │   ├── IDENTITY.md           # AI 身份配置
-│   │   ├── MEMORY.md             # 长期记忆
-│   │   ├── SKILL.md              # 技能说明
-│   │   ├── SOUL.md               # AI 个性配置
-│   │   ├── TOOLS.md              # 工具配置
-│   │   ├── USER.md               # 用户信息
-│   │   ├── .git/                 # Git 仓库
-│   │   ├── .openclaw/            # 工作空间配置
-│   │   └── skills/               # 技能模块
-│   │       └── aastocks/         # 港股查询技能
-│   │           ├── SKILL.md      # 技能文档
-│   │           └── scripts/      # 脚本
-│   │               └── fetch_stock.py
+├── .openclaw/                    # 主配置目录（项目内）
 │   ├── gateway.cmd               # Gateway 启动脚本
-│   ├── openclaw.json             # 主配置文件
+│   ├── openclaw.json             # 主配置文件（备份）
 │   └── update-check.json         # 更新检查配置
 ├── node-v22.21.1-win-x64/        # Node.js 运行环境
 │   ├── node.exe
 │   ├── npm
 │   ├── npx
+│   ├── openclaw/                 # OpenClaw 核心包
 │   └── node_modules/
-│   └── openclaw/                 # OpenClaw 核心包
 ├── Python312/                    # Python 3.12 运行环境
 │   ├── python.exe
 │   └── Lib/                      # Python 标准库
+├── yfinancenews/                 # Yahoo Finance 新闻查询技能（项目内）
+│   ├── SKILL.md                  # 技能文档
+│   ├── yfinancenews.skill        # 技能标记文件
+│   └── scripts/
+│       └── fetch_news.py         # 新闻查询脚本
 ├── start_openclaw.bat            # 主启动脚本
 ├── start_tray.bat                # 托盘应用启动脚本
 ├── install_tray_startup.bat      # 安装开机自启动
@@ -238,6 +225,51 @@ openclaw/
 ├── README.md                     # 项目说明文档
 ├── AGENTS.md                     # 项目文档
 └── .git/                         # Git 版本控制
+
+~/.openclaw/                      # 用户主目录配置（实际运行时使用）
+├── openclaw.json                 # 主配置文件（动态读取）
+├── agents/                       # 代理配置
+│   └── main/
+│       ├── agent/                # 代理配置文件
+│       └── sessions/             # 会话历史
+├── browser/                      # 浏览器相关配置
+├── canvas/                       # 画布功能
+├── completions/                  # Shell 自动补全脚本
+│   ├── openclaw.bash
+│   ├── openclaw.fish
+│   ├── openclaw.ps1
+│   └── openclaw.zsh
+├── cron/                         # 定时任务配置
+│   └── jobs.json
+├── devices/                      # 设备配对信息
+│   ├── paired.json
+│   └── pending.json
+├── identity/                     # 设备身份标识
+│   └── device.json
+├── logs/                         # 日志文件
+└── workspace/                    # 工作空间
+    ├── AGENTS.md                 # 项目文档
+    ├── BOOTSTRAP.md              # 初始化引导
+    ├── HEARTBEAT.md              # 心跳检查配置
+    ├── IDENTITY.md               # AI 身份配置
+    ├── MEMORY.md                 # 长期记忆
+    ├── SKILL.md                  # 技能说明
+    ├── SOUL.md                   # AI 个性配置
+    ├── TOOLS.md                  # 工具配置
+    ├── USER.md                   # 用户信息
+    ├── .git/                     # Git 仓库
+    ├── .openclaw/                # 工作空间配置
+    └── skills/                   # 技能模块
+        ├── aastocks/             # 港股查询技能
+        │   ├── SKILL.md
+        │   ├── aastocks.skill
+        │   └── scripts/
+        │       └── fetch_stock.py
+        └── yfinancenews/         # Yahoo Finance 新闻查询技能
+            ├── SKILL.md
+            ├── yfinancenews.skill
+            └── scripts/
+                └── fetch_news.py
 ```
 
 ## 技术栈
@@ -292,11 +324,25 @@ openclaw/
 3. 检查 API 端点是否可访问
 4. 查看 Gateway 日志
 
+### 配置未生效
+
+1. 确认配置文件路径为 `~/.openclaw/openclaw.json`
+2. 检查配置文件格式是否正确（JSON 格式）
+3. 重启托盘应用以重新加载配置
+4. 使用托盘应用的"查看状态"功能确认当前配置
+
 ### 港股查询失败
 
 1. 检查股票代码格式是否正确
 2. 检查网络连接
 3. 检查 Yahoo Finance API 是否可访问
+
+### 股票新闻查询失败
+
+1. 检查股票代码格式是否正确（美股、港股、A股）
+2. 检查网络连接
+3. 检查 Yahoo Finance API 是否可访问
+4. 某些股票可能暂时没有相关新闻
 
 ### Shell 补全不工作
 
@@ -319,8 +365,17 @@ openclaw/
 - 使用强密码保护 token
 - 定期备份配置文件
 - 不要分享您的 token 和 API key
-- 定期备份 `.openclaw/` 目录
+- 定期备份 `~/.openclaw/` 目录
 - 使用版本控制管理自定义代码
+
+### 托盘应用使用建议
+
+- 推荐使用托盘应用作为主要启动方式（后台运行，不占用桌面空间）
+- 设置开机自启动以保持服务可用
+- 定期查看日志以监控服务状态
+- 使用"查看状态"功能确认服务运行状态
+- 托盘应用启动后，命令行窗口会自动关闭，这是正常行为
+- 修改配置文件后，建议重启托盘应用以加载新配置
 
 ## 开发
 
@@ -377,7 +432,7 @@ git push
 ---
 
 **维护者**：OpenClaw Team
-**最后更新**：2026-03-10
+**最后更新**：2026-03-11
 **代码仓库**：https://github.com/wonglaitung/openclaw_installer
 
 ## 支持
@@ -407,6 +462,19 @@ git push
 ## 版本信息
 
 - **OpenClaw 版本**：2026.3.2
-- **最后更新**：2026-03-10
-- **最后配置**：2026-03-10
+- **最后更新**：2026-03-11
+- **最后配置**：2026-03-11
 - **Git 仓库**：https://github.com/wonglaitung/openclaw_installer
+
+## 更新日志
+
+### 2026-03-11
+- 更新托盘应用图标为红色圆形背景，白色 "OC" 文字
+- 托盘应用改为从 `~/.openclaw/openclaw.json` 动态读取配置
+- 添加"初始化设定"菜单项，支持执行 onboard 命令
+- 新增 Yahoo Finance 股票新闻查询技能（yfinancenews）
+- 更新文档，反映配置文件位置变更
+
+### 2026-03-10
+- 添加托盘应用功能
+- 添加港股查询技能（aastocks）

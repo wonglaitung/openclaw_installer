@@ -1,0 +1,48 @@
+# Python 运行环境
+Python312/
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node.js 运行环境
+node-v22.21.1-win-x64/
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# OpenClaw 配置和数据
+.openclaw/
+~/.openclaw/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
