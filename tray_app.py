@@ -263,7 +263,7 @@ class OpenClawTrayApp:
     
     def on_show_logs(self, icon, item):
         """显示日志目录"""
-        log_path = self.base_path / ".openclaw" / "logs"
+        log_path = Path.home() / ".openclaw" / "logs"
         if log_path.exists():
             print(f"打开日志目录：{log_path}")
             os.startfile(str(log_path))
@@ -272,7 +272,7 @@ class OpenClawTrayApp:
     
     def on_open_config(self, icon, item):
         """打开配置文件"""
-        config_path = self.base_path / ".openclaw" / "openclaw.json"
+        config_path = Path.home() / ".openclaw" / "openclaw.json"
         if config_path.exists():
             print(f"打开配置文件：{config_path}")
             os.startfile(str(config_path))
